@@ -1,9 +1,116 @@
-@import 'tailwindcss';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+    body {
+        background-color: #F8FAFC;
+    }
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@layer utilities {
+    .animate-fade-up { animation: fadeUp 0.4s ease-out forwards; }
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    .animate-delay-100 { animation-delay: 100ms; }
+    .animate-delay-200 { animation-delay: 200ms; }
+    .animate-delay-300 { animation-delay: 300ms; }
+    .animate-delay-400 { animation-delay: 400ms; }
+    .animate-delay-500 { animation-delay: 500ms; }
+}
+
+@layer components {
+    .container-admin {
+        @apply w-full max-w-[430px] mx-auto px-5;
+    }
+
+    .card-admin {
+        @apply bg-white rounded-[24px] border border-[#EEF2F7];
+        padding: clamp(16px, 4.5vw, 24px);
+        box-shadow: 0 8px 30px rgba(0,0,0,.06);
+    }
+
+    .btn-admin {
+        @apply inline-flex items-center justify-center rounded-[16px] font-semibold
+               transition-all duration-200 active:scale-[0.98];
+        padding: clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 24px);
+        font-size: clamp(12px, 3.2vw, 14px);
+    }
+
+    .btn-admin-primary {
+        @apply btn-admin bg-[#16A34A] text-white hover:bg-[#15803D];
+    }
+
+    .btn-admin-outline {
+        @apply btn-admin border-2 border-[#16A34A] text-[#16A34A] bg-white hover:bg-[#F0FDF4];
+    }
+
+    .btn-admin-danger {
+        @apply btn-admin bg-[#EF4444] text-white hover:bg-[#DC2626];
+    }
+
+    .btn-admin-sm {
+        padding: clamp(6px, 1.8vw, 10px) clamp(10px, 2.5vw, 16px);
+        font-size: clamp(11px, 2.8vw, 13px);
+    }
+
+    .input-admin {
+        @apply w-full border border-[#EEF2F7] rounded-[16px] text-[#111827]
+               placeholder:text-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#16A34A]/30 focus:border-[#16A34A]
+               transition-all duration-200 bg-white;
+        padding: clamp(10px, 2.5vw, 14px) clamp(12px, 3vw, 16px);
+        font-size: clamp(12px, 3.2vw, 14px);
+    }
+
+    .select-admin {
+        @apply input-admin appearance-none bg-no-repeat;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+        background-position: right 12px center;
+        background-size: 14px;
+    }
+
+    .label-admin {
+        @apply block font-semibold text-[#111827] mb-2;
+        font-size: clamp(12px, 3.2vw, 14px);
+    }
+
+    .badge-income {
+        @apply inline-flex items-center gap-1.5 rounded-full font-semibold
+               bg-green-50 text-[#16A34A] border border-green-200;
+        padding: clamp(2px, 0.6vw, 4px) clamp(8px, 2vw, 12px);
+        font-size: clamp(10px, 2.5vw, 12px);
+    }
+
+    .badge-expense {
+        @apply inline-flex items-center gap-1.5 rounded-full font-semibold
+               bg-red-50 text-[#EF4444] border border-red-200;
+        padding: clamp(2px, 0.6vw, 4px) clamp(8px, 2vw, 12px);
+        font-size: clamp(10px, 2.5vw, 12px);
+    }
+
+    .page-title {
+        font-size: clamp(22px, 6vw, 28px);
+        @apply font-bold text-[#111827];
+    }
+
+    .text-nominal {
+        font-size: clamp(20px, 5.5vw, 28px);
+        @apply font-bold text-[#111827] tracking-tight;
+    }
+
+    .bottom-nav-safe {
+        padding-bottom: 120px;
+    }
 }

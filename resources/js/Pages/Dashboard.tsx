@@ -1,12 +1,18 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link } from '@inertiajs/react';
-import { usePage } from '@inertiajs/react';
-import { useMemo } from 'react';
+import { usePage, router } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
 import Chart from 'react-apexcharts';
 import {
     TrendingUp, TrendingDown, Wallet, FileText,
     Users, Upload, Calendar, Clock, ArrowRight,
 } from 'lucide-react';
+
+interface ChartData {
+    labels: string[];
+    income: number[];
+    expense: number[];
+}
 
 interface Props {
     income: number; expense: number; balance: number;
@@ -14,7 +20,8 @@ interface Props {
     recentTransactions: any[];
     incomeByCategory: any[];
     expenseByCategory: any[];
-    monthly: Record<string, any[]>;
+    chart: ChartData;
+    period: string;
 }
 
 function formatRp(n: number) {
@@ -80,22 +87,24 @@ function StatCard({ icon: Icon, label, value, color, change, chartColor }: { ico
 function clampSparkHeight() { return Math.max(24, Math.min(32, window.innerWidth * 0.04)); }
 function clampSparkWidth() { return Math.max(48, Math.min(80, window.innerWidth * 0.15)); }
 
-function ChartSection({ monthly }: { monthly: Record<string, any[]> }) {
-    const { chartData, hasData } = useMemo(() => {
-        const entries = Object.entries(monthly ?? {});
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-        const data = entries.map(([month, items]) => {
-            const inc = items.find((i: any) => i.type === 'income')?.total ?? 0;
-            const exp = items.find((i: any) => i.type === 'expense')?.total ?? 0;
-            const [, m] = month.split('-');
-            return { month: monthNames[parseInt(m) - 1] || month, income: inc, expense: exp };
-        });
-        return { chartData: data, hasData: data.length > 0 };
-    }, [monthly]);
+const PERIOD_OPTIONS: { key: string; label: string }[] = [
+    { key: '7d', label: '7H' },
+    { key: '30d', label: '30H' },
+    { key: '90d', label: '90H' },
+    { key: '1y', label: '1Y' },
+];
+
+function ChartSection({ chart, period }: { chart: ChartData; period: string }) {
+    const [loading, setLoading] = useState(false);
+
+    const hasData = useMemo(
+        () => chart.labels.length > 0 && (chart.income.some((v) => v > 0) || chart.expense.some((v) => v > 0)),
+        [chart]
+    );
 
     const series = [
-        { name: 'Pemasukan', data: chartData.map((d) => d.income), color: '#16A34A' },
-        { name: 'Pengeluaran', data: chartData.map((d) => d.expense), color: '#EF4444' },
+        { name: 'Pemasukan', data: chart.income, color: '#16A34A' },
+        { name: 'Pengeluaran', data: chart.expense, color: '#EF4444' },
     ];
 
     const options = {
@@ -103,11 +112,26 @@ function ChartSection({ monthly }: { monthly: Record<string, any[]> }) {
         dataLabels: { enabled: false },
         stroke: { curve: 'smooth' as const, width: 2 },
         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.25, opacityTo: 0 } },
-        xaxis: { categories: chartData.map((d) => d.month), axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { colors: '#9CA3AF', fontSize: '10px' } } },
+        xaxis: { categories: chart.labels, axisBorder: { show: false }, axisTicks: { show: false }, labels: { style: { colors: '#9CA3AF', fontSize: '10px' } } },
         yaxis: { labels: { formatter: (v: number) => formatShort(v), style: { colors: '#9CA3AF', fontSize: '10px' }, maxWidth: 36 } },
         grid: { borderColor: '#F3F4F6', strokeDashArray: 3 },
         tooltip: { y: { formatter: (v: number) => formatRp(v) }, style: { fontSize: '11px' } },
         legend: { show: false },
+    };
+
+    const handlePeriodChange = (key: string) => {
+        if (key === period || loading) return;
+        router.get(
+            route('dashboard'),
+            { period: key },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                only: ['chart', 'period'],
+                onStart: () => setLoading(true),
+                onFinish: () => setLoading(false),
+            }
+        );
     };
 
     return (
@@ -118,17 +142,21 @@ function ChartSection({ monthly }: { monthly: Record<string, any[]> }) {
                     <p style={{ fontSize: 'clamp(11px, 1.5vw, 14px)' }} className="text-gray-400 mt-0.5">Pemasukan &amp; Pengeluaran</p>
                 </div>
                 <div className="flex gap-1.5 shrink-0">
-                    {['7H', '30H', '90H', '1Y'].map((p) => (
-                        <button key={p}
+                    {PERIOD_OPTIONS.map(({ key, label }) => (
+                        <button key={key}
+                            onClick={() => handlePeriodChange(key)}
+                            disabled={loading}
                             style={{ padding: 'clamp(4px,1vw,10px) clamp(6px,1.4vw,12px)', fontSize: 'clamp(10px,1.4vw,13px)' }}
-                            className={`rounded-lg font-semibold transition-colors ${p === '1Y' ? 'bg-emerald-50 text-emerald-700' : 'text-gray-400 hover:text-gray-600'}`}>
-                            {p}
+                            className={`rounded-lg font-semibold transition-colors disabled:cursor-wait ${key === period ? 'bg-emerald-50 text-emerald-700' : 'text-gray-400 hover:text-gray-600'}`}>
+                            {label}
                         </button>
                     ))}
                 </div>
             </div>
             {hasData ? (
-                <Chart options={options} series={series} type="area" height={clampChartHeight()} />
+                <div className={loading ? 'opacity-50 transition-opacity' : 'transition-opacity'}>
+                    <Chart options={options} series={series} type="area" height={clampChartHeight()} />
+                </div>
             ) : (
                 <div style={{ height: clampChartHeight() }} className="flex items-center justify-center text-gray-400 text-sm">Belum ada data</div>
             )}
@@ -292,7 +320,7 @@ function QuickActions() {
     );
 }
 
-export default function Dashboard({ income, expense, balance, incomeToday, expenseToday, recentTransactions, monthly }: Props) {
+export default function Dashboard({ income, expense, balance, incomeToday, expenseToday, recentTransactions, chart, period }: Props) {
     const { auth } = usePage().props as any;
     const userName = auth?.user?.name ?? 'Admin';
 
@@ -309,7 +337,7 @@ export default function Dashboard({ income, expense, balance, incomeToday, expen
                 </div>
 
                 <div className="grid grid-cols-1 gap-[clamp(16px,3vw,24px)]">
-                    <ChartSection monthly={monthly} />
+                    <ChartSection chart={chart} period={period} />
                     <MonthlySummary income={income} expense={expense} balance={balance} />
                 </div>
 

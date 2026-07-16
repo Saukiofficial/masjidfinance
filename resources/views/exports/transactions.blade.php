@@ -23,7 +23,7 @@
 <body>
     <div class="header">
         <h2>Laporan Keuangan</h2>
-        <p>Acara Maulid Nabi Muhammad ﷺ — Masjid Darus Sa'adah</p>
+        <p>Acara Maulid Nabi Muhammad SAW Masjid Darus Sa'adah</p>
     </div>
 
     <div class="summary">

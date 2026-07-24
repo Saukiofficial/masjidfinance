@@ -53,13 +53,6 @@ function BlankNota({ nomor }: { nomor: number }) {
                         </tr>
                     </tbody>
                 </table>
-
-                {/* Terbilang */}
-                <div className="mt-3">
-                    <p className="text-[11px] text-gray-600 mb-1">Terbilang:</p>
-                    <div className="border-b border-gray-400 h-5 mb-2 w-full"></div>
-                    <div className="border-b border-gray-400 h-5 w-full"></div>
-                </div>
             </div>
 
             {/* Footer */}

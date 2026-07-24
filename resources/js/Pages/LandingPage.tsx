@@ -449,11 +449,11 @@ function TransactionsCard({ recentTransactions }: Pick<Props, 'recentTransaction
     );
 }
 
-function OverviewSection({ monthly, income, expense, recentTransactions }: Pick<Props, 'monthly' | 'income' | 'expense' | 'recentTransactions'>) {
+function OverviewSection({ monthly, recentTransactions }: Pick<Props, 'monthly' | 'recentTransactions'>) {
     return (
         <section className="max-w-7xl mx-auto px-[clamp(12px,3vw,24px)] py-[clamp(20px,4vw,56px)]">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-[clamp(16px,3vw,32px)]">
-                <ChartCard monthly={monthly} income={income} expense={expense} />
+                <ChartCard monthly={monthly} />
                 <TransactionsCard recentTransactions={recentTransactions} />
             </div>
         </section>
@@ -656,7 +656,7 @@ export default function LandingPage({ income, expense, balance, count, recentTra
             <Navbar />
             <Hero />
             <StatsRow income={income} expense={expense} balance={balance} />
-            <OverviewSection monthly={monthly} income={income} expense={expense} recentTransactions={recentTransactions} />
+            <OverviewSection monthly={monthly} recentTransactions={recentTransactions} />
             <TrustSection />
             <DonationBanner />
             <InfoSection />

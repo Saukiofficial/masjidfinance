@@ -199,79 +199,125 @@ function StatsRow({ income, expense, balance }: { income: number; expense: numbe
     );
 }
 
-function ChartCard({ monthly, income, expense }: { monthly: Record<string, any[]>; income: number; expense: number }) {
+function ChartCard({ monthly }: { monthly: Record<string, any[]> }) {
     const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    const entries = Object.entries(monthly ?? {});
-    const chartData = entries.map(([month, items]) => {
+    
+    // Generate 12 months data dynamically
+    const currentYear = new Date().getFullYear();
+    const chartData = monthNames.map((monthName, index) => {
+        const monthKey = `${currentYear}-${String(index + 1).padStart(2, '0')}`;
+        const items = monthly?.[monthKey] || [];
         const inc = items.find((i: any) => i.type === 'income')?.total ?? 0;
         const exp = items.find((i: any) => i.type === 'expense')?.total ?? 0;
-        const [year, m] = month.split('-');
-        return { month: `${monthNames[parseInt(m, 10) - 1] ?? month}`.trim(), income: inc, expense: exp };
+        return { month: monthName, income: inc, expense: exp };
     });
-    const hasData = chartData.length > 0;
-    const monthCount = entries.length || 1;
-    const avgIncome = income / monthCount;
-    const avgExpense = expense / monthCount;
+
+    const hasData = chartData.some(d => d.income > 0 || d.expense > 0);
+
+    // Dynamically calculate Y-axis max with 20% headroom
+    const maxDataValue = Math.max(...chartData.flatMap(d => [d.income, d.expense]));
+    const yAxisMax = maxDataValue > 0 ? Math.ceil(maxDataValue * 1.2) : 1000000;
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm" style={{ padding: 'clamp(12px,2vw,24px)' }}>
-            <div className="flex items-start justify-between mb-[clamp(12px,2vw,24px)]">
+        <div className="bg-white rounded-[24px] border border-gray-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]" style={{ padding: 'clamp(20px,3vw,32px)' }}>
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-[clamp(24px,3vw,32px)]">
                 <div>
-                    <h3 style={{ fontSize: 'clamp(12px,1.8vw,18px)' }} className="font-bold text-gray-900">Grafik Keuangan Bulanan</h3>
-                    <p style={{ fontSize: 'clamp(9px,1.3vw,14px)' }} className="text-gray-400 mt-[2px]">Pemasukan &amp; Pengeluaran</p>
+                    <h3 style={{ fontSize: 'clamp(16px,2vw,20px)' }} className="font-bold text-slate-900 tracking-tight">Grafik Keuangan Bulanan</h3>
+                    <p style={{ fontSize: 'clamp(12px,1.4vw,14px)' }} className="text-slate-500 mt-1 font-medium">Pendapatan &amp; Pengeluaran</p>
                 </div>
-                <div className="flex items-center gap-[clamp(8px,1.2vw,16px)]" style={{ fontSize: 'clamp(8px,1.1vw,13px)' }}>
-                    <span className="flex items-center gap-[clamp(3px,0.4vw,6px)] text-gray-500"><span className="w-[clamp(6px,0.8vw,10px)] h-[clamp(6px,0.8vw,10px)] rounded-full bg-emerald-500" />Masuk</span>
-                    <span className="flex items-center gap-[clamp(3px,0.4vw,6px)] text-gray-500"><span className="w-[clamp(6px,0.8vw,10px)] h-[clamp(6px,0.8vw,10px)] rounded-full bg-red-500" />Keluar</span>
+                <div className="flex items-center gap-[clamp(12px,1.5vw,20px)] bg-slate-50/80 px-4 py-2 rounded-full border border-slate-100" style={{ fontSize: 'clamp(11px,1.2vw,13px)' }}>
+                    <span className="flex items-center gap-2 text-slate-600 font-medium">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                        Pemasukan
+                    </span>
+                    <span className="flex items-center gap-2 text-slate-600 font-medium">
+                        <span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]" />
+                        Pengeluaran
+                    </span>
                 </div>
             </div>
 
-            {hasData ? (
-                <div style={{ height: 'clamp(180px,28vw,320px)' }} className="w-full -ml-4 mt-4">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                            <defs>
-                                <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                                </linearGradient>
-                                <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
-                                </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} dy={10} />
-                            <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} tickLine={false} axisLine={false} tickFormatter={formatAxis} width={40} />
-                            <Tooltip cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
-                                contentStyle={{ borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', fontSize: '12px', padding: '10px 14px' }}
-                                formatter={(value: any) => [formatRp(Number(value)), '']} />
-                            <Area type="monotone" dataKey="income" name="Pemasukan" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" activeDot={{ r: 6, strokeWidth: 0, fill: '#10b981' }} />
-                            <Area type="monotone" dataKey="expense" name="Pengeluaran" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorExpense)" activeDot={{ r: 6, strokeWidth: 0, fill: '#ef4444' }} />
-                        </AreaChart>
-                    </ResponsiveContainer>
-                </div>
-            ) : (
-                <div style={{ height: 'clamp(140px,22vw,280px)' }} className="flex items-center justify-center text-gray-400">
-                    <div className="text-center"><p className="text-sm font-medium">Belum ada data grafik</p></div>
-                </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-[clamp(12px,2vw,16px)] mt-[clamp(16px,2.5vw,24px)] pt-[clamp(16px,2.5vw,24px)] border-t border-gray-100">
-                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-100/50 rounded-2xl text-center shadow-sm" style={{ padding: 'clamp(12px,1.5vw,20px)' }}>
-                    <div className="w-[clamp(24px,3.5vw,32px)] h-[clamp(24px,3.5vw,32px)] mx-auto rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-[clamp(6px,1vw,12px)]">
-                        <I.arrowDown className="w-[clamp(12px,1.5vw,16px)] h-[clamp(12px,1.5vw,16px)]" />
-                    </div>
-                    <p style={{ fontSize: 'clamp(9px,1.2vw,13px)' }} className="text-gray-500 font-medium mb-[clamp(2px,0.4vw,6px)]">Rata-rata Pemasukan / Bulan</p>
-                    <p style={{ fontSize: 'clamp(13px,1.8vw,20px)' }} className="font-extrabold text-emerald-700 tracking-tight">{formatRp(avgIncome)}</p>
-                </div>
-                <div className="bg-gradient-to-br from-red-50 to-red-100/50 border border-red-100/50 rounded-2xl text-center shadow-sm" style={{ padding: 'clamp(12px,1.5vw,20px)' }}>
-                    <div className="w-[clamp(24px,3.5vw,32px)] h-[clamp(24px,3.5vw,32px)] mx-auto rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-[clamp(6px,1vw,12px)]">
-                        <I.arrowUp className="w-[clamp(12px,1.5vw,16px)] h-[clamp(12px,1.5vw,16px)]" />
-                    </div>
-                    <p style={{ fontSize: 'clamp(9px,1.2vw,13px)' }} className="text-gray-500 font-medium mb-[clamp(2px,0.4vw,6px)]">Rata-rata Pengeluaran / Bulan</p>
-                    <p style={{ fontSize: 'clamp(13px,1.8vw,20px)' }} className="font-extrabold text-red-600 tracking-tight">{formatRp(avgExpense)}</p>
-                </div>
+            {/* Main Chart */}
+            <div style={{ height: 'clamp(240px,35vw,360px)' }} className="w-full -ml-4">
+                <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                        <defs>
+                            <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.25}/>
+                                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                            </linearGradient>
+                            <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.18}/>
+                                <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="4 4" stroke="#f1f5f9" vertical={false} opacity={0.6} />
+                        <XAxis 
+                            dataKey="month" 
+                            tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }} 
+                            tickLine={false} 
+                            axisLine={false} 
+                            dy={16} 
+                        />
+                        <YAxis 
+                            domain={[0, yAxisMax]}
+                            tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }} 
+                            tickLine={false} 
+                            axisLine={false} 
+                            tickFormatter={formatAxis} 
+                            width={56} 
+                            dx={-8}
+                        />
+                        <Tooltip 
+                            cursor={{ stroke: '#cbd5e1', strokeWidth: 1, strokeDasharray: '4 4' }}
+                            content={({ active, payload, label }) => {
+                                if (active && payload && payload.length) {
+                                    return (
+                                        <div className="bg-white/90 backdrop-blur-md rounded-[16px] border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-4 min-w-[160px]">
+                                            <p className="font-semibold text-slate-900 mb-3 text-sm">{label} {currentYear}</p>
+                                            <div className="space-y-2.5">
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <span className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                                                        <span className="w-2 h-2 rounded-full bg-emerald-500" /> Pemasukan
+                                                    </span>
+                                                    <span className="font-bold text-slate-900 text-sm">{formatRp(Number(payload[0].value))}</span>
+                                                </div>
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <span className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                                                        <span className="w-2 h-2 rounded-full bg-red-500" /> Pengeluaran
+                                                    </span>
+                                                    <span className="font-bold text-slate-900 text-sm">{formatRp(Number(payload[1].value))}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                return null;
+                            }} 
+                        />
+                        <Area 
+                            type="monotone" 
+                            dataKey="income" 
+                            name="Pemasukan" 
+                            stroke="#10b981" 
+                            strokeWidth={3} 
+                            fillOpacity={1} 
+                            fill="url(#colorIncome)" 
+                            activeDot={{ r: 6, strokeWidth: 3, stroke: '#fff', fill: '#10b981' }} 
+                        />
+                        <Area 
+                            type="monotone" 
+                            dataKey="expense" 
+                            name="Pengeluaran" 
+                            stroke="#ef4444" 
+                            strokeWidth={3} 
+                            fillOpacity={1} 
+                            fill="url(#colorExpense)" 
+                            activeDot={{ r: 6, strokeWidth: 3, stroke: '#fff', fill: '#ef4444' }} 
+                        />
+                    </AreaChart>
+                </ResponsiveContainer>
             </div>
         </div>
     );

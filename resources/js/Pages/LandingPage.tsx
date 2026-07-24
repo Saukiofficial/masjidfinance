@@ -247,14 +247,20 @@ function ChartCard({ monthly, income, expense }: { monthly: Record<string, any[]
                 </div>
             )}
 
-            <div className="grid grid-cols-2 gap-[clamp(8px,1.2vw,16px)] mt-[clamp(12px,2vw,24px)] pt-[clamp(12px,2vw,24px)] border-t border-gray-100">
-                <div className="bg-emerald-50 border border-emerald-100 rounded-xl text-center" style={{ padding: 'clamp(8px,1.2vw,16px) clamp(10px,1.5vw,20px)' }}>
-                    <p style={{ fontSize: 'clamp(8px,1.1vw,13px)' }} className="text-gray-500 mb-[clamp(2px,0.4vw,4px)]">Rata-rata Pemasukan / Bulan</p>
-                    <p style={{ fontSize: 'clamp(11px,1.6vw,16px)' }} className="font-bold text-emerald-700">{formatRp(avgIncome)}</p>
+            <div className="grid grid-cols-2 gap-[clamp(12px,2vw,16px)] mt-[clamp(16px,2.5vw,24px)] pt-[clamp(16px,2.5vw,24px)] border-t border-gray-100">
+                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-100/50 rounded-2xl text-center shadow-sm" style={{ padding: 'clamp(12px,1.5vw,20px)' }}>
+                    <div className="w-[clamp(24px,3.5vw,32px)] h-[clamp(24px,3.5vw,32px)] mx-auto rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-[clamp(6px,1vw,12px)]">
+                        <I.arrowDown className="w-[clamp(12px,1.5vw,16px)] h-[clamp(12px,1.5vw,16px)]" />
+                    </div>
+                    <p style={{ fontSize: 'clamp(9px,1.2vw,13px)' }} className="text-gray-500 font-medium mb-[clamp(2px,0.4vw,6px)]">Rata-rata Pemasukan / Bulan</p>
+                    <p style={{ fontSize: 'clamp(13px,1.8vw,20px)' }} className="font-extrabold text-emerald-700 tracking-tight">{formatRp(avgIncome)}</p>
                 </div>
-                <div className="bg-red-50 border border-red-100 rounded-xl text-center" style={{ padding: 'clamp(8px,1.2vw,16px) clamp(10px,1.5vw,20px)' }}>
-                    <p style={{ fontSize: 'clamp(8px,1.1vw,13px)' }} className="text-gray-500 mb-[clamp(2px,0.4vw,4px)]">Rata-rata Pengeluaran / Bulan</p>
-                    <p style={{ fontSize: 'clamp(11px,1.6vw,16px)' }} className="font-bold text-red-600">{formatRp(avgExpense)}</p>
+                <div className="bg-gradient-to-br from-red-50 to-red-100/50 border border-red-100/50 rounded-2xl text-center shadow-sm" style={{ padding: 'clamp(12px,1.5vw,20px)' }}>
+                    <div className="w-[clamp(24px,3.5vw,32px)] h-[clamp(24px,3.5vw,32px)] mx-auto rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-[clamp(6px,1vw,12px)]">
+                        <I.arrowUp className="w-[clamp(12px,1.5vw,16px)] h-[clamp(12px,1.5vw,16px)]" />
+                    </div>
+                    <p style={{ fontSize: 'clamp(9px,1.2vw,13px)' }} className="text-gray-500 font-medium mb-[clamp(2px,0.4vw,6px)]">Rata-rata Pengeluaran / Bulan</p>
+                    <p style={{ fontSize: 'clamp(13px,1.8vw,20px)' }} className="font-extrabold text-red-600 tracking-tight">{formatRp(avgExpense)}</p>
                 </div>
             </div>
         </div>
@@ -390,7 +396,7 @@ function TransactionsCard({ recentTransactions }: Pick<Props, 'recentTransaction
 function OverviewSection({ monthly, income, expense, recentTransactions }: Pick<Props, 'monthly' | 'income' | 'expense' | 'recentTransactions'>) {
     return (
         <section className="max-w-7xl mx-auto px-[clamp(12px,3vw,24px)] py-[clamp(20px,4vw,56px)]">
-            <div className="grid grid-cols-1 gap-[clamp(16px,3vw,32px)]">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-[clamp(16px,3vw,32px)]">
                 <ChartCard monthly={monthly} income={income} expense={expense} />
                 <TransactionsCard recentTransactions={recentTransactions} />
             </div>

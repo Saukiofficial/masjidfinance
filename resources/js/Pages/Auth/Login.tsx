@@ -65,7 +65,7 @@ export default function Login({ status, canResetPassword }: { status?: string; c
                                     <input id="email" type="email" value={data.email}
                                         onChange={(e) => setData('email', e.target.value)}
                                         className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 transition-all"
-                                        placeholder="admin@masjid.test" autoComplete="username" autoFocus />
+                                        placeholder="username" autoComplete="username" autoFocus />
                                 </div>
                                 {errors.email && <p className="text-red-500 text-xs mt-1.5">{errors.email}</p>}
                             </div>

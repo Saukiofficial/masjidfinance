@@ -4,6 +4,8 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 
+import Modal from '@/Components/Modal';
+
 interface Props {
     income: number; expense: number; balance: number; count: number;
     recentTransactions: any[]; monthly: Record<string, any[]>; topIncomeCategories: any[];
@@ -260,12 +262,99 @@ function ChartCard({ monthly, income, expense }: { monthly: Record<string, any[]
 }
 
 function TransactionsCard({ recentTransactions }: Pick<Props, 'recentTransactions'>) {
+    const [modalOpen, setModalOpen] = useState(false);
+    const [exportType, setExportType] = useState('all');
+    const [dateFrom, setDateFrom] = useState('');
+    const [dateTo, setDateTo] = useState('');
+
+    const handlePrint = () => {
+        let url = `/export/pdf`;
+        const params = new URLSearchParams();
+        if (exportType !== 'all') params.append('type', exportType);
+        if (dateFrom) params.append('date_from', dateFrom);
+        if (dateTo) params.append('date_to', dateTo);
+        
+        const qs = params.toString();
+        if (qs) url += `?${qs}`;
+        
+        window.open(url, '_blank');
+        setModalOpen(false);
+    };
+
     return (
         <div id="transaksi" className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-            <div className="flex items-center justify-between" style={{ padding: 'clamp(12px,2vw,24px) clamp(12px,2vw,24px) clamp(8px,1.2vw,16px)' }}>
+            <div className="flex items-center justify-between flex-wrap gap-4" style={{ padding: 'clamp(12px,2vw,24px) clamp(12px,2vw,24px) clamp(8px,1.2vw,16px)' }}>
                 <h3 style={{ fontSize: 'clamp(12px,1.8vw,18px)' }} className="font-bold text-gray-900">Transaksi Terbaru</h3>
-                <a href="#transaksi" style={{ fontSize: 'clamp(9px,1.2vw,13px)' }} className="font-semibold text-emerald-700 hover:text-emerald-800">Lihat Semua</a>
+                <div className="flex items-center gap-[clamp(8px,1.5vw,16px)]">
+                    <button
+                        onClick={() => setModalOpen(true)}
+                        className="inline-flex items-center gap-[clamp(3px,0.5vw,6px)] bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-semibold rounded-lg transition-colors shadow-sm whitespace-nowrap"
+                        style={{ padding: 'clamp(4px,0.8vw,10px) clamp(8px,1.5vw,16px)', fontSize: 'clamp(9px,1.2vw,13px)' }}
+                    >
+                        <I.document className="w-[clamp(10px,1.3vw,16px)] h-[clamp(10px,1.3vw,16px)]" />
+                        Cetak Laporan
+                    </button>
+                </div>
             </div>
+
+            <Modal show={modalOpen} onClose={() => setModalOpen(false)} maxWidth="md">
+                <div className="p-6">
+                    <h2 className="text-lg font-bold text-gray-900 mb-4">Cetak Laporan Keuangan</h2>
+                    
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Tipe Laporan</label>
+                            <select
+                                value={exportType}
+                                onChange={(e) => setExportType(e.target.value)}
+                                className="w-full border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 rounded-md shadow-sm"
+                            >
+                                <option value="all">Semua Transaksi</option>
+                                <option value="income">Pemasukan Saja</option>
+                                <option value="expense">Pengeluaran Saja</option>
+                            </select>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                                <input
+                                    type="date"
+                                    value={dateFrom}
+                                    onChange={(e) => setDateFrom(e.target.value)}
+                                    className="w-full border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 rounded-md shadow-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                                <input
+                                    type="date"
+                                    value={dateTo}
+                                    onChange={(e) => setDateTo(e.target.value)}
+                                    className="w-full border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 rounded-md shadow-sm"
+                                />
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-500">*Kosongkan tanggal jika ingin mencetak semua periode</p>
+                    </div>
+
+                    <div className="mt-6 flex justify-end gap-3">
+                        <button
+                            onClick={() => setModalOpen(false)}
+                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            onClick={handlePrint}
+                            className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 border border-transparent rounded-md hover:bg-emerald-700 flex items-center gap-2"
+                        >
+                            <I.document className="w-4 h-4" />
+                            Cetak Sekarang
+                        </button>
+                    </div>
+                </div>
+            </Modal>
             {recentTransactions?.length > 0 ? (
                 <div className="divide-y divide-gray-50">
                     {recentTransactions.slice(0, 4).map((t: any) => (
@@ -301,7 +390,7 @@ function TransactionsCard({ recentTransactions }: Pick<Props, 'recentTransaction
 function OverviewSection({ monthly, income, expense, recentTransactions }: Pick<Props, 'monthly' | 'income' | 'expense' | 'recentTransactions'>) {
     return (
         <section className="max-w-7xl mx-auto px-[clamp(12px,3vw,24px)] py-[clamp(20px,4vw,56px)]">
-            <div className="grid grid-cols-2 gap-[clamp(12px,2vw,24px)]">
+            <div className="grid grid-cols-1 gap-[clamp(16px,3vw,32px)]">
                 <ChartCard monthly={monthly} income={income} expense={expense} />
                 <TransactionsCard recentTransactions={recentTransactions} />
             </div>

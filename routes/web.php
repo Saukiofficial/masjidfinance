@@ -27,10 +27,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
 
-    Route::get('export/pdf', [ExportController::class, 'pdf'])->name('export.pdf');
-    Route::get('export/excel', [ExportController::class, 'excel'])->name('export.excel');
-
     Route::get('nota', [NotaController::class, 'index'])->name('nota.index');
 });
+
+Route::get('export/pdf', [ExportController::class, 'pdf'])->name('export.pdf');
+Route::get('export/excel', [ExportController::class, 'excel'])->name('export.excel');
 
 require __DIR__.'/auth.php';
